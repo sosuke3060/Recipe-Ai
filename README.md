@@ -13,7 +13,7 @@
    pip install streamlit 
    ```
 
-5. 実行してアプリケーションを立ち上げる。
+4. 実行してアプリケーションを立ち上げる。
    ```sh
    streamlit run app.py
    ```
