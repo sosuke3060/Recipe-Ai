@@ -50,7 +50,7 @@ activity_level = st.selectbox("今日の運動量は？", ["軽い", "普通", "
 ingredients = st.text_input("手持ちの食材を入力してください (カンマ区切り)")
 cooking_time = st.slider("調理にかけられる時間 (分)", min_value=5, max_value=120, step=5)
 
-# 提案ボタンをクリックした場合の処理
+# 提案ボタンをクリックしてからの処理
 if st.button("提案を見る"):
     st.write("AIが献立を考え中...")
 
