@@ -8,7 +8,12 @@
    
 2. .envファイルをクローンしたフォルダ直下に配置する。
 
-3. 実行してアプリケーションを立ち上げる。
+3. streamlitをインストールする。
+   ```sh
+   pip install streamlit 
+   ```
+
+5. 実行してアプリケーションを立ち上げる。
    ```sh
    streamlit run app.py
    ```
