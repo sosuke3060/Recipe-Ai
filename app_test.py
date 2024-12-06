@@ -38,14 +38,16 @@ llm = WatsonxLLM(
 # アプリの基本構築
 st.title("献立提案アプリ")
 
+# チャット用のメモリを作成
+memory = ConversationBufferMemory()
+
+# ConversationChainを一度だけ初期化
+conversation = ConversationChain(llm=llm, memory=memory)
+
 # ユーザー入力フォームを作成
 activity_level = st.selectbox("今日の運動量は？", ["軽い", "普通", "激しい"])
 ingredients = st.text_input("手持ちの食材を入力 (カンマ区切り)")
 cooking_time = st.slider("調理にかけられる時間 (分)", min_value=5, max_value=120, step=5)
-
-# 記録用のデータリスト
-if "records" not in st.session_state:
-    st.session_state["records"] = []
 
 # 提案ボタンをクリックしてからの処理
 if st.button("提案を見る"):
@@ -54,10 +56,9 @@ if st.button("提案を見る"):
     # LangChainとwatsonx.aiの連携
     prompt = PromptTemplate(
         input_variables=["activity_level", "ingredients", "cooking_time"],
-        template="""運動量が{activity_level}人向けに、以下の食材を使った献立をいくつか提案してください:
+        template="""運動量が{activity_level}人向けに、以下の食材を使った献立を提案してください:
         食材: {ingredients}
-        調理時間: {cooking_time}分以内
-        それぞれの献立について"材料"・"調理手順"・"予測される調理時間"・"摂取カロリーと栄養素の目安"を表示してください。"""
+        調理時間: {cooking_time}分以内"""
     )
 
     query = prompt.format(
@@ -68,50 +69,20 @@ if st.button("提案を見る"):
 
     try:
         response = llm.generate([query])
-        st.write("提案された献立:")
-        recipes = response.generations[0][0].text.split("\n\n")  # 複数の献立を分割
+        proposal = response.generations[0][0].text
+        st.write(proposal)
 
-        for i, recipe in enumerate(recipes):
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.write(recipe)
-
-            # 「摂取カロリーと栄養素の目安」を抽出して解析
-            if "摂取カロリーと栄養素の目安:" in recipe:
-                nutritional_info_raw = recipe.split("摂取カロリーと栄養素の目安:")[1].strip()
-                nutritional_info = {}
-                for line in nutritional_info_raw.split("\n"):
-                    if ":" in line:
-                        key, value = line.split(":")
-                        nutritional_info[key.strip()] = value.strip()
-
-                # 記録ボタンを右横に表示
-                with col2:
-                    if st.button(f"記録", key=f"record_button_{i}"):
-                        st.session_state["records"].append(nutritional_info)
-                        st.success(f"献立 {i + 1} のカロリーと栄養素を記録しました！")
+        # メモリにユーザーのリクエストとAIの応答を記録
+        memory.chat_memory.add_user_message(query)
+        memory.chat_memory.add_ai_message(proposal)
 
     except Exception as e:
         st.error(f"エラーが発生しました: {e}")
 
-# 記録した内容を表示
-st.subheader("記録したカロリーと栄養素")
-if st.session_state["records"]:
-    for idx, record in enumerate(st.session_state["records"]):
-        st.write(f"記録 {idx + 1}:")
-        for key, value in record.items():
-            st.write(f"{key}: {value}")
-else:
-    st.write("まだ記録がありません。")
-
-
-
 # チャット機能の実装
 st.subheader("AIとチャットしてみましょう")
-user_message = st.text_input("提案された献立について質問してみてください", key="chat_input")
+user_message = st.text_input("AIに質問してみてください", key="chat_input")
 if st.button("送信"):
-    conversation = ConversationChain(llm=llm)
-
     if user_message.strip():
         try:
             ai_response = conversation.run(user_message)
@@ -120,4 +91,3 @@ if st.button("送信"):
             st.error(f"エラーが発生しました: {e}")
     else:
         st.warning("質問を入力してください！")
-
