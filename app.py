@@ -54,10 +54,11 @@ if st.button("提案を見る"):
     # LangChainとwatsonx.aiの連携
     prompt = PromptTemplate(
         input_variables=["activity_level", "ingredients", "cooking_time"],
-        template="""運動量が{activity_level}人向けに、以下の食材を使った献立をいくつか提案してください:
+        template="""運動量が{activity_level}人向けに、以下の食材・条件に従い献立をいくつか提案してください:
         食材: {ingredients}
         調理時間: {cooking_time}分以内
-        それぞれの献立について"材料"・"調理手順"・"予測される調理時間"・"摂取カロリーと栄養素の目安"を表示してください。"""
+        それぞれの献立について"材料"・"調理手順"・"予測される調理時間"・"摂取カロリーと栄養素の目安"を表示してください。
+        全ての食材を使う必要はありません。"""
     )
 
     query = prompt.format(
@@ -95,7 +96,7 @@ if st.button("提案を見る"):
         st.error(f"エラーが発生しました: {e}")
 
 # 記録した内容を表示
-st.subheader("記録したカロリーと栄養素")
+st.subheader("摂取カロリーと栄養バランスの記録")
 if st.session_state["records"]:
     for idx, record in enumerate(st.session_state["records"]):
         st.write(f"記録 {idx + 1}:")
