@@ -1,10 +1,7 @@
 # Recipe-Ai
 
-# 献立提案AIアプリ
-
 ## プロジェクト概要
-
-本プロジェクトは、ユーザーの運動量、手持ちの食材、調理可能時間を考慮し、最適な献立を提案するアプリです。
+ユーザーの運動量、手持ちの食材、調理可能時間を考慮し、最適な献立を提案するアプリの開発
 
 ## 主な機能
 
@@ -15,21 +12,39 @@
 
 ## 使用技術
 
-- 言語モデル: OpenAI (gpt-4o)
+- 言語モデル: IBM watsonx.ai, OpenAI (gpt-4o)
 - フロントエンド: Streamlit
 - バックエンド処理: LangChain
 
-## 環境構築方法
+## アーキテクチャ
 
-### 1. リポジトリをクローンします。
+![画像の説明](Architecture.png)
+
+## 環境構築方法(OpenAI APIの場合)
+
+### 1. リポジトリをクローン
 
 ```bash
-git clone https://github.com/yourusername/menu-proposal-ai.git
-cd menu-proposal-ai
+git clone https://github.com/sosuke3060/Recipe-Ai.git
+```
 
-
-
-### 2. 必要なライブラリのインストール
+### 2. ライブラリをインストール
 
 ```bash
 pip install -r requirements.txt
+```
+
+### 3. 環境変数の設定
+
+プロジェクトのルートディレクトリに以下の内容の`.env`ファイルを作成してください。
+
+```bash
+OPENAI_API_KEY=取得したAPIキー
+OPENAI_MODEL=gpt-4o
+```
+
+### 4. アプリを起動
+
+```bash
+streamlit run app_openai.py
+```
