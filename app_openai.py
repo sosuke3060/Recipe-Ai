@@ -34,9 +34,13 @@ activity_level = st.selectbox("今日の運動量は？", ["軽い", "普通", "
 ingredients = st.text_input("手持ちの食材を入力 (カンマ区切り)")
 cooking_time = st.slider("調理にかけられる時間 (分)", min_value=5, max_value=120, step=5)
 
+# セッションに会話メモリが存在しない場合は初期化
+if "conversation_memory" not in st.session_state:
+    from langchain.memory import ConversationBufferMemory
+    st.session_state.conversation_memory = ConversationBufferMemory()
+
 if st.button("提案を見る"):
     st.write("AIが献立を考え中...")
-
     prompt = PromptTemplate(
         input_variables=["activity_level", "ingredients", "cooking_time"],
         template="""運動量が{activity_level}人向けに、以下の食材・条件に従い献立をいくつか提案してください:
@@ -56,20 +60,33 @@ if st.button("提案を見る"):
         response = llm.invoke(query)
         st.write("提案された献立:")
         st.write(response.content)
+        # 会話履歴に保存 (input と output を記録)
+        st.session_state.conversation_memory.save_context(
+            {"input": query},
+            {"output": response.content}
+        )
     except Exception as e:
         st.error(f"エラーが発生しました: {e}")
 
 # チャット機能
 st.subheader("AIとチャットしてみましょう")
 user_message = st.text_input("提案された献立について質問してみてください", key="chat_input")
-if st.button("送信"):
-    conversation = ConversationChain(llm=llm)
 
+# すでに会話メモリがセッションに保存されているので、それを使って会話チェーンを構築
+if "conversation" not in st.session_state:
+    from langchain.chains import ConversationChain
+    st.session_state.conversation = ConversationChain(
+        llm=llm, 
+        memory=st.session_state.conversation_memory
+    )
+
+if st.button("送信"):
     if user_message.strip():
         try:
-            ai_response = conversation.run(user_message)
+            ai_response = st.session_state.conversation.run(user_message)
             st.write(ai_response)
         except Exception as e:
             st.error(f"エラーが発生しました: {e}")
     else:
         st.warning("質問を入力してください！")
+
