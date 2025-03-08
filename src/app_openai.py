@@ -30,11 +30,11 @@ llm = ChatOpenAI(
 st.sidebar.title("献立提案アプリ - 入力")
 activity_level = st.sidebar.selectbox("今日の運動量は？", ["軽い", "普通", "激しい"])
 ingredients = st.sidebar.text_input("手持ちの食材 (カンマ区切り)", value="卵, 牛乳, パン")
-cooking_time = st.sidebar.slider("調理可能時間 (分)", min_value=5, max_value=120, step=5, value=30)
+cooking_time = st.sidebar.slider("調理にかけられる時間 (分)", min_value=5, max_value=120, step=5, value=30)
 
 # メイン画面のタイトルと説明
 st.title("献立提案アプリ")
-st.markdown("このアプリは、ユーザーの運動量、手持ちの食材、調理可能時間を考慮して、最適な献立を提案します。")
+st.markdown("このアプリは、ユーザーの運動量、手持ちの食材、調理にかけられる時間を考慮して、最適な献立を提案します。")
 
 # セッションに会話メモリが存在しない場合は初期化
 if "conversation_memory" not in st.session_state:
@@ -64,43 +64,59 @@ if st.sidebar.button("献立を提案する"):
 
         try:
             response = llm.invoke(query)
-            st.markdown("### 提案された献立")
-            st.markdown(response.content)
-            # 会話履歴に保存 (input と output を記録)
+            # 献立提案結果を強調表示
+            st.markdown(
+                f"""
+                <div style="
+                    background-color: #e0f7fa;
+                    border: 2px solid #00acc1;
+                    padding: 20px;
+                    border-radius: 10px;
+                    margin-top: 20px;
+                    ">
+                    <h2 style="color: #006064;">提案された献立</h2>
+                    <p>{response.content}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+            # 会話履歴に保存（チャット用）
             st.session_state.conversation_memory.save_context(
                 {"input": query},
                 {"output": response.content}
             )
+            # 献立提案が生成されたことを記録するフラグ
+            st.session_state.meal_suggestion_generated = True
         except Exception as e:
             st.error(f"エラーが発生しました: {e}")
 
-# チャット機能のセクション
-st.markdown("---")
-st.subheader("AIとチャットしてみましょう")
-user_message = st.text_input("提案された献立について質問してください", key="chat_input")
+# 献立提案が生成されている場合のみ、チャット機能を表示
+if st.session_state.get("meal_suggestion_generated", False):
+    st.markdown("---")
+    st.subheader("AIとチャットしてみましょう")
+    user_message = st.text_input("提案された献立について質問してください", key="chat_input")
 
-col1, col2 = st.columns([1, 1])
-with col1:
-    if st.button("送信"):
-        if user_message.strip():
-            with st.spinner("AIが回答中です..."):
-                try:
-                    if "conversation" not in st.session_state:
-                        st.session_state.conversation = ConversationChain(
-                            llm=llm, 
-                            memory=st.session_state.conversation_memory
-                        )
-                    ai_response = st.session_state.conversation.run(user_message)
-                    st.markdown("**AIの回答:**")
-                    st.markdown(ai_response)
-                except Exception as e:
-                    st.error(f"エラーが発生しました: {e}")
-        else:
-            st.warning("質問を入力してください！")
-
-with col2:
-    if st.button("チャット履歴をクリア"):
-        st.session_state.conversation_memory.clear()
-        if "conversation" in st.session_state:
-            del st.session_state.conversation
-        st.success("チャット履歴をクリアしました。")
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("送信"):
+            if user_message.strip():
+                with st.spinner("AIが回答中です..."):
+                    try:
+                        if "conversation" not in st.session_state:
+                            st.session_state.conversation = ConversationChain(
+                                llm=llm, 
+                                memory=st.session_state.conversation_memory
+                            )
+                        ai_response = st.session_state.conversation.run(user_message)
+                        st.markdown("**AIの回答:**")
+                        st.markdown(ai_response)
+                    except Exception as e:
+                        st.error(f"エラーが発生しました: {e}")
+            else:
+                st.warning("質問を入力してください！")
+    with col2:
+        if st.button("チャット履歴をクリア"):
+            st.session_state.conversation_memory.clear()
+            if "conversation" in st.session_state:
+                del st.session_state.conversation
+            st.success("チャット履歴をクリアしました。")
