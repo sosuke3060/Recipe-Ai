@@ -16,7 +16,7 @@ https://sosuke3060-recipe-ai-srcapp-openai-nhywmb.streamlit.app/
 
 ## 使用技術
 
-- 言語モデル: IBM watsonx.ai, OpenAI (gpt-4o)
+- LLMモデル: IBM watsonx.ai, OpenAI (gpt-4o)
 - フロントエンド: Streamlit
 - バックエンド処理: LangChain
 
