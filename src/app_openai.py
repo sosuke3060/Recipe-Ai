@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
-from langchain_openai import ChatOpenAI  # OpenAI用のLLM
+from langchain.chat_models import ChatOpenAI # OpenAI用のLLM
 
 # 環境変数のロード
 load_dotenv()
