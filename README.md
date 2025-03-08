@@ -1,5 +1,7 @@
 # Recipe-Ai
-[本アプリケーションのリンク](https://sosuke3060-recipe-ai-srcapp-openai-nhywmb.streamlit.app/)
+
+## デモ
+https://sosuke3060-recipe-ai-srcapp-openai-nhywmb.streamlit.app/
 
 ## プロジェクト概要
 ユーザーの運動量、手持ちの食材、調理可能時間を考慮し、最適な献立を提案するアプリの開発
